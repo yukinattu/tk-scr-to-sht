@@ -20,7 +20,8 @@ async function scrape(account) {
     waitUntil: "networkidle2",
     timeout: 0
   });
-  await page.waitForTimeout(5000);
+  await new Promise(resolve => setTimeout(resolve, 5000));
+
 
   // ★ ボット検知されてないかチェック
   const isPuzzle = await page.evaluate(() => {
