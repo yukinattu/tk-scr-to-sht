@@ -11,9 +11,12 @@ async function scrape(account) {
     waitUntil: 'domcontentloaded'
   });
 
-  // __NEXT_DATA__からデータ取得
-  const content = await page.content();
-  const match = content.match(/<script id="__NEXT_DATA__".*?>(.*?)<\/script>/);
+  // ★ B方式：evaluateで__NEXT_DATA__取得
+  const nextData = await page.evaluate(() => {
+    const el = document.querySelector('#__NEXT_DATA__');
+    return el ? el.textContent : null;
+  });
+
   let data = {
     date: new Date().toISOString().split('T')[0],
     username: account,
@@ -31,25 +34,23 @@ async function scrape(account) {
     hashtags: ''              // jsonDataから取得できれば後で追加
   };
   
-  if (match && match[1]) {
-    const jsonData = JSON.parse(match[1]);
-    // デバッグ
-    // console.log(JSON.stringify(jsonData, null, 2));
-
-    // ★取得できるものだけ取得する例★
+  if (nextData) {
     try {
+      const jsonData = JSON.parse(nextData);
+      console.log(`[${account}] __NEXT_DATA__取得成功！`);
+
+      // ★例：userデータ取得
       const userData = jsonData?.props?.pageProps?.user;
       if (userData) {
         data.full_name = userData?.nickname || '';
       }
 
-      // ★その他、取得できそうなら取得できれば後で追加
-      // （例：動画情報、再生数、タイトル、コメント数など）
+      // ★その他取得できれば後で追加
     } catch (error) {
-      console.error("データ取得でエラー:", error);
+      console.error(`[${account}] JSON.parseエラー:`, error);
     }
   } else {
-    console.error("`__NEXT_DATA__`が見つかりませんでした。");
+    console.error(`[${account}] __NEXT_DATA__が見つかりませんでした。`);
   }
 
   await browser.close();
@@ -62,19 +63,7 @@ async function scrape(account) {
   for (let account of accounts) {
     results.push(await scrape(account));
   }
-  fs.writeFileSync('./data.json', JSON.stringify(results, null, 2));
-})();
-(async () => {
-  const accounts = ["riachan_ganbaru", "nenechann07"];
-  const results = [];
-  for (let account of accounts) {
-    results.push(await scrape(account));
-  }
 
-  // ★取得データをそのまま出力
   console.log("取得したデータ:", JSON.stringify(results, null, 2));
-
-  // JSONファイルへの保存
   fs.writeFileSync('./data.json', JSON.stringify(results, null, 2));
 })();
-
