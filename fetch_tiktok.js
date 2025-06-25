@@ -1,15 +1,40 @@
-const puppeteer = require('puppeteer');
-const fs = require('fs');
+const puppeteer = require("puppeteer-extra");
+const StealthPlugin = require("puppeteer-extra-plugin-stealth");
+const fs = require("fs");
+
+puppeteer.use(StealthPlugin());
 
 async function scrape(account) {
   const browser = await puppeteer.launch({
-    headless: true,
+    headless: "new",
     args: ["--no-sandbox", "--disable-setuid-sandbox"]
   });
   const page = await browser.newPage();
+
+  await page.setUserAgent(
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) " +
+    "AppleWebKit/537.36 (KHTML, like Gecko) " +
+    "Chrome/" + (Math.floor(Math.random() * 20) + 90) + ".0.0.0 Safari/537.36"
+  );
   await page.goto(`https://www.tiktok.com/@${account}`, {
-    waitUntil: 'domcontentloaded'
+    waitUntil: "networkidle2",
+    timeout: 0
   });
+  await page.waitForTimeout(5000);
+
+  // ★ ボット検知されてないかチェック
+  const isPuzzle = await page.evaluate(() => {
+    return (
+      document.body.innerText.includes("Verify to continue") ||
+      !!document.querySelector('#captcha-container') ||
+      !!document.querySelector("div[data-e2e='captcha-page']")
+    );
+  });
+  if (isPuzzle) {
+    console.error(`[${account}] ⚠️ ボット検知（パズル）発生！取得できません。`);
+    await browser.close();
+    return null;
+  }
 
   // ★ B方式：evaluateで__NEXT_DATA__取得
   const nextData = await page.evaluate(() => {
@@ -18,7 +43,7 @@ async function scrape(account) {
   });
 
   let data = {
-    date: new Date().toISOString().split('T')[0],
+    date: new Date().toISOString().split("T")[0],
     username: account,
     full_name: '',           // jsonDataから取得できれば後で追加
     video_url: '',           // jsonDataから取得できれば後で追加
@@ -44,7 +69,6 @@ async function scrape(account) {
       if (userData) {
         data.full_name = userData?.nickname || '';
       }
-
       // ★その他取得できれば後で追加
     } catch (error) {
       console.error(`[${account}] JSON.parseエラー:`, error);
@@ -61,7 +85,8 @@ async function scrape(account) {
   const accounts = ["riachan_ganbaru", "nenechann07"]; //取得したいアカウント
   const results = [];
   for (let account of accounts) {
-    results.push(await scrape(account));
+    const result = await scrape(account);
+    if (result) results.push(result);
   }
 
   console.log("取得したデータ:", JSON.stringify(results, null, 2));
