@@ -64,3 +64,17 @@ async function scrape(account) {
   }
   fs.writeFileSync('./data.json', JSON.stringify(results, null, 2));
 })();
+(async () => {
+  const accounts = ["riachan_ganbaru", "nenechann07"];
+  const results = [];
+  for (let account of accounts) {
+    results.push(await scrape(account));
+  }
+
+  // ★取得データをそのまま出力
+  console.log("取得したデータ:", JSON.stringify(results, null, 2));
+
+  // JSONファイルへの保存
+  fs.writeFileSync('./data.json', JSON.stringify(results, null, 2));
+})();
+
