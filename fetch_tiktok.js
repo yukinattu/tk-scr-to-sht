@@ -7,24 +7,24 @@ async function scrape(account) {
     args: ["--no-sandbox", "--disable-setuid-sandbox"]
   });
   const page = await browser.newPage();
-  await page.goto(`https://www.tiktok.com/@${account}`);
+  await page.goto(`https://www.tiktok.com/@${account}`, {waitUntil: 'domcontentloaded'});
 
-  // ★取得例：後で実データ取得ロジックへ変更
+  // ★取得例：後で取得ロジックへ変更
   const data = {
     date: new Date().toISOString().split('T')[0],
     username: account,
-    full_name: '', //後で取得
-    video_url: '', //後で取得
-    video_title: '', //後で取得
-    views: '', 
-    likes: '', 
-    comments: '', 
-    shares: '', 
-    downloads: '', 
-    favourites: '', 
-    engagement: '', 
-    duration: '', 
-    hashtags: '' 
+    full_name: await page.$eval('.user-name-selector', el => el.textContent.trim()),
+    video_url: await page.$eval('.video-selector', el => el.getAttribute('href')),
+    video_title: await page.$eval('.title-selector', el => el.textContent.trim()),
+    views: await page.$eval('.views-selector', el => el.textContent.trim()),
+    likes: await page.$eval('.likes-selector', el => el.textContent.trim()),
+    comments: await page.$eval('.comments-selector', el => el.textContent.trim()),
+    shares: await page.$eval('.shares-selector', el => el.textContent.trim()),
+    downloads: await page.$eval('.downloads-selector', el => el.textContent.trim()),
+    favourites: await page.$eval('.favourites-selector', el => el.textContent.trim()),
+    engagement: '', // engagementの取得ルールが必要
+    duration: '', // durationの取得ルールが必要
+    hashtags: '', // hashtagsの取得ルールが必要
   };
   
   await browser.close();
