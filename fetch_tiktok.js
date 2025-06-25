@@ -2,10 +2,13 @@ const puppeteer = require('puppeteer');
 const fs = require('fs');
 
 async function scrape(account) {
-  const browser = await puppeteer.launch({headless:true});
+  const browser = await puppeteer.launch({
+    headless: true,
+    args: ["--no-sandbox", "--disable-setuid-sandbox"]
+  });
   const page = await browser.newPage();
   await page.goto(`https://www.tiktok.com/@${account}`);
-  
+
   // ★取得例：後で実データ取得ロジックへ変更
   const data = {
     date: new Date().toISOString().split('T')[0],
