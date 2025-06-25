@@ -9,22 +9,21 @@ async function scrape(account) {
   const page = await browser.newPage();
   await page.goto(`https://www.tiktok.com/@${account}`, {waitUntil: 'domcontentloaded'});
 
-  // ★取得例：後で取得ロジックへ変更
   const data = {
     date: new Date().toISOString().split('T')[0],
     username: account,
-    full_name: await page.$eval('.user-name-selector', el => el.textContent.trim()),
-    video_url: await page.$eval('.video-selector', el => el.getAttribute('href')),
-    video_title: await page.$eval('.title-selector', el => el.textContent.trim()),
-    views: await page.$eval('.views-selector', el => el.textContent.trim()),
-    likes: await page.$eval('.likes-selector', el => el.textContent.trim()),
-    comments: await page.$eval('.comments-selector', el => el.textContent.trim()),
-    shares: await page.$eval('.shares-selector', el => el.textContent.trim()),
-    downloads: await page.$eval('.downloads-selector', el => el.textContent.trim()),
-    favourites: await page.$eval('.favourites-selector', el => el.textContent.trim()),
-    engagement: '', // engagementの取得ルールが必要
-    duration: '', // durationの取得ルールが必要
-    hashtags: '', // hashtagsの取得ルールが必要
+    full_name: await page.$eval('.user-title', el => el.textContent.trim()),
+    video_url: await page.$eval('.browse-video-link', el => el.getAttribute('href')),
+    video_title: await page.$eval('.video-detail-desc', el => el.textContent.trim()),
+    views: await page.$eval('.css-1dr5cmz-DivPlayCount', el => el.textContent.trim()),
+    likes: await page.$eval('.css-1mizm9b-ButtonActionItem .css-vc3yj-StrongText', el => el.textContent.trim()),
+    comments: await page.$eval('.css-1mizm9b-ButtonActionItem .css-vc3yj-StrongText', el => el.textContent.trim()),
+    shares: await page.$eval('.css-1mizm9b-ButtonActionItem .css-vc3yj-StrongText', el => el.textContent.trim()),
+    downloads: '', // 未取得
+    favourites: '', // 未取得
+    engagement: '', // 未取得
+    duration: '', // 未取得
+    hashtags: '', // 未取得
   };
   
   await browser.close();
