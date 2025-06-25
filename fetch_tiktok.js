@@ -17,24 +17,37 @@ async function scrape(account) {
   let data = {
     date: new Date().toISOString().split('T')[0],
     username: account,
-    full_name: '',       // jsonDataから取得できれば後で追加
-    video_url: '',       // jsonDataから取得できれば後で追加
-    video_title: '',     // jsonDataから取得できれば後で追加
-    views: '',           // jsonDataから取得できれば後で追加
-    likes: '',           // jsonDataから取得できれば後で追加
-    comments: '',        // jsonDataから取得できれば後で追加
-    shares: '',          // jsonDataから取得できれば後で追加
-    downloads: '',       // 未取得
-    favourites: '',      // 未取得
-    engagement: '',      // 未取得
-    duration: '',        // 未取得
-    hashtags: ''         // jsonDataから取得できれば後で追加
+    full_name: '',           // jsonDataから取得できれば後で追加
+    video_url: '',           // jsonDataから取得できれば後で追加
+    video_title: '',         // jsonDataから取得できれば後で追加
+    views: '',                // jsonDataから取得できれば後で追加
+    likes: '',                // jsonDataから取得できれば後で追加
+    comments: '',             // jsonDataから取得できれば後で追加
+    shares: '',               // jsonDataから取得できれば後で追加
+    downloads: '',            // 未取得
+    favourites: '',           // 未取得
+    engagement: '',           // 未取得
+    duration: '',             // 未取得
+    hashtags: ''              // jsonDataから取得できれば後で追加
   };
   
   if (match && match[1]) {
     const jsonData = JSON.parse(match[1]);
-    // ★★ ここで、取得した jsonData から値を取得できれば取得 ★★
-    // console.log(jsonData) して取得できそうならデータ取得処理追加
+    // デバッグ
+    // console.log(JSON.stringify(jsonData, null, 2));
+
+    // ★取得できるものだけ取得する例★
+    try {
+      const userData = jsonData?.props?.pageProps?.user;
+      if (userData) {
+        data.full_name = userData?.nickname || '';
+      }
+
+      // ★その他、取得できそうなら取得できれば後で追加
+      // （例：動画情報、再生数、タイトル、コメント数など）
+    } catch (error) {
+      console.error("データ取得でエラー:", error);
+    }
   } else {
     console.error("`__NEXT_DATA__`が見つかりませんでした。");
   }
