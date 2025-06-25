@@ -6,24 +6,23 @@ puppeteer.use(StealthPlugin());
 
 async function scrape(account) {
   const browser = await puppeteer.launch({
-    headless: "new",
+    headless: true,
     args: ["--no-sandbox", "--disable-setuid-sandbox"]
   });
   const page = await browser.newPage();
 
   await page.setUserAgent(
     "Mozilla/5.0 (Windows NT 10.0; Win64; x64) " +
-    "AppleWebKit/537.36 (KHTML, like Gecko) " +
-    "Chrome/" + (Math.floor(Math.random() * 20) + 90) + ".0.0.0 Safari/537.36"
+      "AppleWebKit/537.36 (KHTML, like Gecko) " +
+      "Chrome/" + (Math.floor(Math.random() * 20) + 90) + ".0.0.0 Safari/537.36"
   );
   await page.goto(`https://www.tiktok.com/@${account}`, {
     waitUntil: "networkidle2",
     timeout: 0
   });
-  await new Promise(resolve => setTimeout(resolve, 5000));
+  await new Promise((resolve) => setTimeout(resolve, 5000));
 
-
-  // ★ ボット検知されてないかチェック
+  // ★ ボット検知チェック
   const isPuzzle = await page.evaluate(() => {
     return (
       document.body.innerText.includes("Verify to continue") ||
@@ -37,7 +36,7 @@ async function scrape(account) {
     return null;
   }
 
-  // ★ B方式：evaluateで__NEXT_DATA__取得
+  // ★ B方式：__NEXT_DATA__取得
   const nextData = await page.evaluate(() => {
     const el = document.querySelector('#__NEXT_DATA__');
     return el ? el.textContent : null;
@@ -63,19 +62,18 @@ async function scrape(account) {
   if (nextData) {
     try {
       const jsonData = JSON.parse(nextData);
-      console.log(`[${account}] __NEXT_DATA__取得成功！`);
+      console.log(`[${account}] ✅ __NEXT_DATA__取得成功！`);
 
       // ★例：userデータ取得
       const userData = jsonData?.props?.pageProps?.user;
       if (userData) {
         data.full_name = userData?.nickname || '';
       }
-      // ★その他取得できれば後で追加
     } catch (error) {
       console.error(`[${account}] JSON.parseエラー:`, error);
     }
   } else {
-    console.error(`[${account}] __NEXT_DATA__が見つかりませんでした。`);
+    console.error(`[${account}] ❌ __NEXT_DATA__が見つかりませんでした。`);
   }
 
   await browser.close();
